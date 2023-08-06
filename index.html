@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<!-- saved from url=(0029)https://gun-sounds.glitch.me/ -->
+<html lang="en"><div id="in-page-channel-node-id" data-channel-name="in_page_channel_iAJ-0X"></div><script type="text/javascript">!function pageScript() {
+  let speedConfig = {
+    speed: 1.0,
+    cbSetIntervalChecked: true,
+    cbSetTimeoutChecked: true,
+    cbPerformanceNowChecked: true,
+    cbDateNowChecked: true,
+    cbRequestAnimationFrameChecked: false,
+  };
+
+  const emptyFunction = () => {};
+
+  const originalClearInterval = window.clearInterval;
+  const originalclearTimeout = window.clearTimeout;
+
+  const originalSetInterval = window.setInterval;
+  const originalSetTimeout = window.setTimeout;
+
+  const originalPerformanceNow = window.performance.now.bind(
+    window.performance
+  );
+
+  const originalDateNow = Date.now;
+
+  const originalRequestAnimationFrame = window.requestAnimationFrame;
+
+  let timers = [];
+  const reloadTimers = () => {
+    console.log(timers);
+    const newtimers = [];
+    timers.forEach((timer) => {
+      originalClearInterval(timer.id);
+      if (timer.customTimerId) {
+        originalClearInterval(timer.customTimerId);
+      }
+      if (!timer.finished) {
+        const newTimerId = originalSetInterval(
+          timer.handler,
+          speedConfig.cbSetIntervalChecked
+            ? timer.timeout / speedConfig.speed
+            : timer.timeout,
+          ...timer.args
+        );
+        timer.customTimerId = newTimerId;
+        newtimers.push(timer);
+      }
+    });
+    timers = newtimers;
+  };
+
+  window.addEventListener("message", (e) => {
+    if (e.data.command === "setSpeedConfig") {
+      speedConfig = e.data.config;
+      reloadTimers();
+    }
+  });
+
+  window.postMessage({ command: "getSpeedConfig" });
+
+  window.clearInterval = (id) => {
+    originalClearInterval(id);
+    timers.forEach((timer) => {
+      if (timer.id == id) {
+        timer.finished = true;
+        if (timer.customTimerId) {
+          originalClearInterval(timer.customTimerId);
+        }
+      }
+    });
+  };
+
+  window.clearTimeout = (id) => {
+    originalclearTimeout(id);
+    timers.forEach((timer) => {
+      if (timer.id == id) {
+        timer.finished = true;
+        if (timer.customTimerId) {
+          originalclearTimeout(timer.customTimerId);
+        }
+      }
+    });
+  };
+
+  window.setInterval = (handler, timeout, ...args) => {
+    console.log("timeout  ", timeout);
+    if (!timeout) timeout = 0;
+    const id = originalSetInterval(
+      handler,
+      speedConfig.cbSetIntervalChecked ? timeout / speedConfig.speed : timeout,
+      ...args
+    );
+    timers.push({
+      id: id,
+      handler: handler,
+      timeout: timeout,
+      args: args,
+      finished: false,
+      customTimerId: null,
+    });
+    return id;
+  };
+
+  window.setTimeout = (handler, timeout, ...args) => {
+    if (!timeout) timeout = 0;
+    return originalSetTimeout(
+      handler,
+      speedConfig.cbSetTimeoutChecked ? timeout / speedConfig.speed : timeout,
+      ...args
+    );
+  };
+
+  // performance.now
+  (function () {
+    let performanceNowValue = null;
+    let previusPerformanceNowValue = null;
+    window.performance.now = () => {
+      const originalValue = originalPerformanceNow();
+      if (performanceNowValue) {
+        performanceNowValue +=
+          (originalValue - previusPerformanceNowValue) *
+          (speedConfig.cbPerformanceNowChecked ? speedConfig.speed : 1);
+      } else {
+        performanceNowValue = originalValue;
+      }
+      previusPerformanceNowValue = originalValue;
+      return Math.floor(performanceNowValue);
+    };
+  })();
+
+  // Date.now
+  (function () {
+    let dateNowValue = null;
+    let previusDateNowValue = null;
+    Date.now = () => {
+      const originalValue = originalDateNow();
+      if (dateNowValue) {
+        dateNowValue +=
+          (originalValue - previusDateNowValue) *
+          (speedConfig.cbDateNowChecked ? speedConfig.speed : 1);
+      } else {
+        dateNowValue = originalValue;
+      }
+      previusDateNowValue = originalValue;
+      return Math.floor(dateNowValue);
+    };
+  })();
+
+  // requestAnimationFrame
+  (function () {
+    let dateNowValue = null;
+    let previusDateNowValue = null;
+    const callbackFunctions = [];
+    const callbackTick = [];
+    const newRequestAnimationFrame = (callback) => {
+      return originalRequestAnimationFrame((timestamp) => {
+        const originalValue = originalDateNow();
+        if (dateNowValue) {
+          dateNowValue +=
+            (originalValue - previusDateNowValue) *
+            (speedConfig.cbRequestAnimationFrameChecked
+              ? speedConfig.speed
+              : 1);
+        } else {
+          dateNowValue = originalValue;
+        }
+        previusDateNowValue = originalValue;
+
+        const dateNowValue_MathFloor = Math.floor(dateNowValue);
+
+        const index = callbackFunctions.indexOf(callback);
+        let tickFrame = null;
+        if (index == -1) {
+          callbackFunctions.push(callback);
+          callbackTick.push(0);
+          callback(dateNowValue_MathFloor);
+        } else if (speedConfig.cbRequestAnimationFrameChecked) {
+          tickFrame = callbackTick[index];
+          tickFrame += speedConfig.speed;
+
+          if (tickFrame >= 1) {
+            while (tickFrame >= 1) {
+              callback(dateNowValue_MathFloor);
+              window.requestAnimationFrame = emptyFunction;
+              tickFrame -= 1;
+            }
+            window.requestAnimationFrame = newRequestAnimationFrame;
+          } else {
+            window.requestAnimationFrame(callback);
+          }
+          callbackTick[index] = tickFrame;
+        } else {
+          callback(dateNowValue_MathFloor);
+        }
+      });
+    };
+    window.requestAnimationFrame = newRequestAnimationFrame;
+  })();
+}()
+//# sourceURL=pageScript.js</script><script type="text/javascript" src="chrome-extension://kajfghlhfkcocafkcjlajldicbikpgnp/catcher.js"><!-- script injected by Request Maker --></script><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="module" src="./index_files/client"></script>
+
+    <title>Hello Installable</title>
+
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- OpenGraph/Social sharing -->
+    <meta name="description" content="A simple starting point for your next installable PWA">
+    <meta name="og:description" content="A simple starting point for your next installable PWA">
+    <meta property="og:image" content="https://cdn.glitch.global/4d3939de-7a6c-4907-91f2-457806b6567a/hello-installable-icon-512.png?v=1685573553185">
+    <meta property="og:title" content="Hello Installable">
+    <meta name="twitter:card" content="summary">
+    <link rel="icon" href="https://cdn.glitch.global/4d3939de-7a6c-4907-91f2-457806b6567a/hello-installable-icon-180.png?v=1685573552753">
+    <link rel="stylesheet" type="text/css" href="./index_files/style.css">
+
+    <!-- PWA setup - update public/sw.js if you add your own assets like a new .css file -->
+    <link rel="manifest" href="https://gun-sounds.glitch.me/manifest.json">
+
+    <script src="./index_files/index.js" async="" defer=""></script>
+  </head>
+  <body>
+    <main>
+      <div class="wrapper">
+        <div class="content">
+
+          <div id="status-area">
+            <h2>
+              Status
+            </h2>
+            <div class="show-for-portrait">orientation: portrait</div>
+            <div class="show-for-landscape">orientation: landscape</div>
+            <div class="show-for-installed" style="display: none;">installed/browser: installed</div>
+            <div class="show-for-browser" style="display: block;">installed/browser: browser</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  
+
+
+
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sound Effects Website</title>
+  <style>
+body {
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background-color: #282828; /* Updated dark grey background color */
+  color: #fff; /* Text color for better contrast */
+  cursor: pointer;
+}
+
+#buttonsContainer {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+
+button {
+  display: block;
+  padding: 12px 20px;
+  font-size: 18px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+#imageContainer {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+  </style>
+
+
+  <div id="buttonsContainer">
+    <button onclick="window.location.href=&#39;glock.html&#39;">Glock 17</button>
+    <button onclick="window.location.href=&#39;spas.html&#39;">Spas - 12</button>
+    <button onclick="window.location.href=&#39;T5000.html&#39;">T5000 Sniper Rifle</button>
+    <button onclick="window.location.href=&#39;AR15.html&#39;">AR15 Supressed</button>
+  </div>
+  <div id="imageContainer">
+    <!-- Your image content here -->
+  </div>
